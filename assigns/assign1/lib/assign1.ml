@@ -1,4 +1,5 @@
 
+
 let num_factors (n : int) : int = 
   let rec loop n d count =
     if d * d > n then
@@ -10,8 +11,6 @@ let num_factors (n : int) : int =
       loop n (d+1) count
   in
   loop n 2 0
-
-
 
 let perfect_power (i : int) (n : int) : bool = 
   if i = 1 then true
@@ -31,27 +30,23 @@ let perfect_power (i : int) (n : int) : bool =
           else if pow > res || k > res then false
             else test (k + 1)
           in test 1
-
-
-
-
           
 
 let collatz (n : int) : int =
-  let rec coll i count =
-  if i = 1 then count 
-    else if i mod 2 = 0 then 
-      coll (i/2) (count + 1)
-      else coll (3 * i * 1) (count + 1)
-    in
-    coll n 0
+      let rec coll i count =
+        if i = 1 then count
+        else if i mod 2 = 0 then coll (i / 2) (count + 1)
+        else coll (3 * i + 1) (count + 1)
+      in
+      coll n 0
 
-let tst_records (i : int) : int = 
-  let rec loop n seq found = 
-    let a = collatz i in 
-    if a > seq then 
-      if found = i then n 
-        else loop (n + 1) a (found + 1)
-        else loop (n+1 ) seq found
-      in 
-      loop 1 (-1) 0 
+  let tst_records (n : int) : int =
+    let rec loop i max found =
+      let s = collatz i in
+      if s > max then
+        if found = n then i
+        else loop (i + 1) s (found + 1)
+      else
+        loop (i + 1) max found
+    in
+    loop 1 (-1) 0
