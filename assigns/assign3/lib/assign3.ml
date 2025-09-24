@@ -1,4 +1,3 @@
-
 let rec rev_append (l : 'a list) (r : 'a list) : 'a list =
   match l with
   | [] -> r
@@ -28,19 +27,84 @@ let sep_on_whitespace (s : string) : string list =
 
 type registers = (int * int) list
 
-let load (_l : int list) : registers = assert false
+let load (l : int list) : registers =
+  let rec aux i xs =
+    match xs with
+    | [] -> []
+    | h :: t ->
+        if h = 0 then aux (i + 1) t          
+        else (i, h) :: aux (i + 1) t
+  in
+  aux 0 l
 
-let lookup (_rs : registers) (_i : int) : int = assert false
+let rec lookup (rs : registers) (i : int) : int = 
+  match rs with 
+  |[] -> 0
+  |(k, j) :: t->
+    if k = i then j
+    else 
+      lookup t i
 
-let incr (_rs : registers) (_i : int) : registers = assert false
 
-let zero (_rs : registers) (_i : int) : registers = assert false
+let rec incr (rs : registers) (i : int) : registers = 
+  match rs with 
+  |[] -> [(i, 1)]         
+  | (a, b) :: t->
+    if a = i then (a, b + 1) :: t
+    else if a >i then (i, 1) :: rs 
+    else(a,b) :: incr t i 
 
-let transfer (_rs : registers) (_i : int) (_j : int) : registers = assert false
 
-let parse_urm (_tokens : string list) : int list list = assert false
 
-let eval_urm (_prog : int list list) (_rs : registers) : registers = assert false
+let rec zero (rs : registers) (i : int) : registers =
+  match rs with 
+  |[] -> []
+  |(c, d) :: t ->
+    if c = i then t    
+    else (c, d) :: zero t i      
+
+
+
+let rec update (rs : registers) (i : int) (v : int) : registers =
+  match rs with
+  | [] -> if v = 0 then [] else [(i, v)]
+  | (j, w) :: t ->
+      if j = i then
+        if v = 0 then t else (i, v) :: t
+      else if j > i then
+        if v = 0 then rs else (i, v) :: rs
+      else
+        (j, w) :: update t i v
+let transfer (rs : registers) (i : int) (j : int) : registers =
+  let v = lookup rs i in
+  update rs j v
+
+  let parse_urm (tokens : string list) : int list list =
+    let rec aux toks =
+      match toks with
+      | [] -> []
+      | "Z" :: i :: rest -> [0; int_of_string i] :: aux rest
+      | "I" :: i :: rest -> [1; int_of_string i] :: aux rest
+      | "T" :: i :: j :: rest -> [2; int_of_string i; int_of_string j] :: aux rest
+      | "J" :: i :: j :: k :: rest -> [3; int_of_string i; int_of_string j; int_of_string k] :: aux rest
+      | _ -> failwith "invalid program"
+    in
+    aux tokens
+
+let eval_urm (prog : int list list) (rs : registers) : registers =
+  let rec step rs pc =
+    if pc < 0 || pc >= List.length prog then rs
+    else
+      match List.nth prog pc with
+      | [0; i] -> step (zero rs i) (pc + 1)
+      | [1; i] -> step (incr rs i) (pc + 1)
+      | [2; i; j] -> step (transfer rs i j) (pc + 1)
+      | [3; i; j; k] ->
+          if lookup rs i = lookup rs j then step rs k
+          else step rs (pc + 1)
+      | _ -> failwith "invalid instruction"
+  in
+  step rs 0
 
 let interp_urm (prog : string) (args : int list) : int =
   prog
