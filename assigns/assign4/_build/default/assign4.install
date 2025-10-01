@@ -1,0 +1,15 @@
+lib: [
+  "_build/install/default/lib/assign4/META"
+  "_build/install/default/lib/assign4/assign4.a"
+  "_build/install/default/lib/assign4/assign4.cma"
+  "_build/install/default/lib/assign4/assign4.cmi"
+  "_build/install/default/lib/assign4/assign4.cmt"
+  "_build/install/default/lib/assign4/assign4.cmx"
+  "_build/install/default/lib/assign4/assign4.cmxa"
+  "_build/install/default/lib/assign4/assign4.ml"
+  "_build/install/default/lib/assign4/dune-package"
+  "_build/install/default/lib/assign4/opam"
+]
+libexec: [
+  "_build/install/default/lib/assign4/assign4.cmxs"
+]

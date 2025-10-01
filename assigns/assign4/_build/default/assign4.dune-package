@@ -1,0 +1,30 @@
+(lang dune 3.20)
+(name assign4)
+(sections (lib .) (libexec .))
+(files
+ (lib
+  (META
+   assign4.a
+   assign4.cma
+   assign4.cmi
+   assign4.cmt
+   assign4.cmx
+   assign4.cmxa
+   assign4.ml
+   dune-package
+   opam))
+ (libexec (assign4.cmxs)))
+(library
+ (name assign4)
+ (kind normal)
+ (archives (byte assign4.cma) (native assign4.cmxa))
+ (plugins (byte assign4.cma) (native assign4.cmxs))
+ (native_archives assign4.a)
+ (requires stdlib320)
+ (main_module_name Assign4)
+ (modes byte native)
+ (modules
+  (singleton
+   (obj_name assign4)
+   (visibility public)
+   (source (path Assign4) (impl (path assign4.ml))))))
