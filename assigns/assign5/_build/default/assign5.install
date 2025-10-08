@@ -1,0 +1,15 @@
+lib: [
+  "_build/install/default/lib/assign5/META"
+  "_build/install/default/lib/assign5/assign5.a"
+  "_build/install/default/lib/assign5/assign5.cma"
+  "_build/install/default/lib/assign5/assign5.cmi"
+  "_build/install/default/lib/assign5/assign5.cmt"
+  "_build/install/default/lib/assign5/assign5.cmx"
+  "_build/install/default/lib/assign5/assign5.cmxa"
+  "_build/install/default/lib/assign5/assign5.ml"
+  "_build/install/default/lib/assign5/dune-package"
+  "_build/install/default/lib/assign5/opam"
+]
+libexec: [
+  "_build/install/default/lib/assign5/assign5.cmxs"
+]
