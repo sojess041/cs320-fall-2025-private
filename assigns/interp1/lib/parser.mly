@@ -1,5 +1,5 @@
 %{
-(* Use the Utils AST from the spec *)
+(* Build the AST defined in Utils *)
 open Utils
 %}
 
@@ -13,15 +13,15 @@ open Utils
 %token <string> ID
 %token EOF
 
-%start prog
-%type <Utils.expr> prog
-
+%start <Utils.prog> prog
 %%
 
+(* A program is one expression followed by EOF *)
 prog:
   | expr EOF                               { $1 }
 ;
 
+(* Highest-level expression forms *)
 expr:
   | IF expr THEN expr ELSE expr            { If ($2, $4, $6) }
   | LET ID EQ expr IN expr                 { Let ($2, $4, $6) }
@@ -29,19 +29,19 @@ expr:
   | disj                                   { $1 }
 ;
 
-/* || should be right-associative: a || b || c ==> a || (b || c) */
+(* || is RIGHT-associative *)
 disj:
   | conj OR disj                           { Bop (Or,  $1, $3) }
   | conj                                   { $1 }
 ;
 
-/* && should be right-associative too */
+(* && is RIGHT-associative *)
 conj:
   | cmp AND conj                           { Bop (And, $1, $3) }
   | cmp                                    { $1 }
 ;
 
-/* comparisons left-associative */
+(* Comparisons are LEFT-associative *)
 cmp:
   | cmp LT  add                            { Bop (Lt,  $1, $3) }
   | cmp LTE add                            { Bop (Lte, $1, $3) }
@@ -52,14 +52,14 @@ cmp:
   | add                                    { $1 }
 ;
 
-/* + and - left-associative */
+(* + and - are LEFT-associative *)
 add:
   | add PLUS  mul                          { Bop (Add, $1, $3) }
   | add MINUS mul                          { Bop (Sub, $1, $3) }
   | mul                                    { $1 }
 ;
 
-/* *, /, mod left-associative */
+(* *, /, mod are LEFT-associative *)
 mul:
   | mul STAR  app                          { Bop (Mul, $1, $3) }
   | mul SLASH app                          { Bop (Div, $1, $3) }
@@ -67,12 +67,13 @@ mul:
   | app                                    { $1 }
 ;
 
-/* left-associative application */
+(* Function application is LEFT-associative and binds tighter than ops *)
 app:
   | app atom                               { App ($1, $2) }
   | atom                                   { $1 }
 ;
 
+(* Atoms *)
 atom:
   | INT                                    { Num $1 }
   | TRUE                                   { True }
