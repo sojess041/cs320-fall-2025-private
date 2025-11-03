@@ -1,6 +1,0 @@
-%{
-open Utils
-%}
-
-%token LPAREN RPAREN PLUS MINUS STAR SLASH MOD
-%token LT LTE GT G
