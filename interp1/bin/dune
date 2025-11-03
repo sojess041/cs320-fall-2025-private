@@ -1,4 +1,0 @@
-(executable
- (public_name interp1)
- (name main)
- (libraries interp1))
