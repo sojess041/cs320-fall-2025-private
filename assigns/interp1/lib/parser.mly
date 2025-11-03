@@ -1,20 +1,20 @@
 %{
+(* Use the Utils AST from the spec *)
 open Utils
 %}
 
-%token LPAREN RPAREN PLUS MINUS STAR SLASH MOD
-%token LT LTE GT GTE EQ NEQ AND OR
-%token IF THEN ELSE LET IN FUN ARROW TRUE FALSE EOF
+%token IF THEN ELSE LET IN FUN ARROW
+%token TRUE FALSE
+%token PLUS MINUS STAR SLASH MOD
+%token LT LTE GT GTE EQ NEQ
+%token AND OR
+%token LPAREN RPAREN
 %token <int> INT
 %token <string> ID
+%token EOF
 
-%start <Utils.prog> prog
-
-%left OR
-%left AND
-%nonassoc LT LTE GT GTE EQ NEQ
-%left PLUS MINUS
-%left STAR SLASH MOD
+%start prog
+%type <Utils.expr> prog
 
 %%
 
@@ -29,16 +29,19 @@ expr:
   | disj                                   { $1 }
 ;
 
+/* || should be right-associative: a || b || c ==> a || (b || c) */
 disj:
-  | disj OR conj                           { Bop (Or,  $1, $3) }
+  | conj OR disj                           { Bop (Or,  $1, $3) }
   | conj                                   { $1 }
 ;
 
+/* && should be right-associative too */
 conj:
-  | conj AND cmp                           { Bop (And, $1, $3) }
+  | cmp AND conj                           { Bop (And, $1, $3) }
   | cmp                                    { $1 }
 ;
 
+/* comparisons left-associative */
 cmp:
   | cmp LT  add                            { Bop (Lt,  $1, $3) }
   | cmp LTE add                            { Bop (Lte, $1, $3) }
@@ -49,12 +52,14 @@ cmp:
   | add                                    { $1 }
 ;
 
+/* + and - left-associative */
 add:
-  | add PLUS mul                           { Bop (Add, $1, $3) }
+  | add PLUS  mul                          { Bop (Add, $1, $3) }
   | add MINUS mul                          { Bop (Sub, $1, $3) }
   | mul                                    { $1 }
 ;
 
+/* *, /, mod left-associative */
 mul:
   | mul STAR  app                          { Bop (Mul, $1, $3) }
   | mul SLASH app                          { Bop (Div, $1, $3) }
@@ -62,6 +67,7 @@ mul:
   | app                                    { $1 }
 ;
 
+/* left-associative application */
 app:
   | app atom                               { App ($1, $2) }
   | atom                                   { $1 }

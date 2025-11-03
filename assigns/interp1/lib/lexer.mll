@@ -4,9 +4,12 @@ open Parser
 
 let ws     = [' ' '\t' '\r' '\n']+
 let digit  = ['0'-'9']
-let int    = digit+
-let letter = ['A'-'Z' 'a'-'z' '_']
-let ident  = letter (letter | digit | '_')*
+let int    = '-'? digit+                               (* allow leading minus *)
+
+(* first char: lowercase or underscore; rest: letters/digits/_/-/' *)
+let ident_start = ['a'-'z' '_']
+let ident_rest  = ['a'-'z' 'A'-'Z' '0'-'9' '_' '-' '\'']
+let ident       = ident_start ident_rest*
 
 rule read = parse
 | ws                      { read lexbuf }
@@ -20,7 +23,6 @@ rule read = parse
 | "<"                     { LT }
 | ">"                     { GT }
 | "+"                     { PLUS }
-| "-"                     { MINUS }
 | "*"                     { STAR }
 | "/"                     { SLASH }
 | "("                     { LPAREN }
@@ -34,7 +36,8 @@ rule read = parse
 | "true"                  { TRUE }
 | "false"                 { FALSE }
 | "mod"                   { MOD }
-| int as n                { INT (int_of_string n) }
+| int as n                { INT (int_of_string n) }    (* BEFORE "-" *)
+| "-"                     { MINUS }                    (* AFTER int *)
 | ident as s              { ID s }
 | eof                     { EOF }
 | _                       { failwith "lex error" }
