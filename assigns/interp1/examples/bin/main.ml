@@ -1,5 +1,4 @@
 open Interp1
-open Utils
 
 let _ =
   if Array.length Sys.argv > 1

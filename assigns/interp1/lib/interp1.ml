@@ -1,150 +1,127 @@
-(* lib/interp1.ml *)
-open Utils
-let ( let* ) r f = match r with Ok x -> f x | Error e -> Error e
-
-(* You said parse is already working; keep your version or this one. *)
+include Utils
 let parse (s : string) : expr option =
-  match Parser.prog Lexer.read (Lexing.from_string s) with
-  | e -> Some e
-  | exception _ -> None
+  try Some (Parser.prog Lexer.read (Lexing.from_string s))
+  with _ -> None
 
-(* ---------- helpers ---------- *)
-let expr_of_value = function
-  | VNum n        -> Num n
-  | VBool true    -> True
-  | VBool false   -> False
-  | VUnit         -> Unit
-  | VFun (x,body) -> Fun (x, body)
-
-let as_int = function VNum n -> Some n | _ -> None
-let as_bool = function VBool b -> Some b | _ -> None
-
-(* ---------- substitution ---------- *)
-let rec subst (v : value) (x : string) (e : expr) : expr =
+let rec subst (v: value) (x: string) (e: expr) : expr =
   match e with
-  | Unit | True | False | Num _ -> e
-  | Var y -> if x = y then expr_of_value v else e
-  | App (e1,e2) -> App (subst v x e1, subst v x e2)
-  | Bop (op,e1,e2) -> Bop (op, subst v x e1, subst v x e2)
-  | If (e1,e2,e3) -> If (subst v x e1, subst v x e2, subst v x e3)
-  | Let (y,e1,e2) ->
-      if y = x then Let (y, subst v x e1, e2)
-      else Let (y, subst v x e1, subst v x e2)
-  | Fun (y,body) ->
-      if y = x then e else Fun (y, subst v x body)
+  | Num _ | True | False | Unit -> e
+  | Var y -> 
+      if x = y then 
+        match v with 
+        | VNum n -> Num n 
+        | VBool b -> if b then True else False 
+        | VUnit -> Unit 
+        | VFun (param, body) -> Fun (param, body)
+      else Var y
+  | Bop (b, e1, e2) -> Bop (b, subst v x e1, subst v x e2)
+  | If (cond, e1, e2) -> If (subst v x cond, subst v x e1, subst v x e2)
+  | Let (y, e1, e2) ->
+      if x = y then 
+        Let (y, subst v x e1, e2)
+      else 
+        Let (y, subst v x e1, subst v x e2)
+  | Fun (y, body) ->
+      if x = y then 
+        Fun (y, body)
+      else 
+        Fun (y, subst v x body)
+  | App (e1, e2) -> App (subst v x e1, subst v x e2)
 
-(* ---------- evaluation (big-step, left-to-right) ---------- *)
-let rec eval (e : expr) : (value, error) result =
+let rec eval (e: expr) : (value, error) result =
   match e with
-  | Unit      -> Ok VUnit
-  | True      -> Ok (VBool true)
-  | False     -> Ok (VBool false)
-  | Num n     -> Ok (VNum n)
-  | Var x     -> Error (UnknownVar x)
-
-  | If (c,t,f) ->
-      (match eval c with
+  | Num n -> Ok (VNum n)
+  | True -> Ok (VBool true)
+  | False -> Ok (VBool false)
+  | Unit -> Ok VUnit
+  | Var x -> Error (UnknownVar x)
+  | Bop (b, e1, e2) -> 
+      let res1 = eval e1 in
+      (match res1 with
        | Error err -> Error err
-       | Ok v ->
-         match as_bool v with
-         | None -> Error InvalidIfCond
-         | Some true  -> eval t
-         | Some false -> eval f)
-
-  | Let (x,e1,e2) ->
-      (match eval e1 with
+       | Ok v1 ->
+           (match b, v1 with
+            | And, VBool false -> Ok (VBool false)
+            | Or, VBool true -> Ok (VBool true)
+            | And, VBool true | Or, VBool false ->
+                let res2 = eval e2 in
+                (match res2 with
+                 | Error err -> Error err
+                 | Ok (VBool b2) -> Ok (VBool b2)
+                 | Ok _ -> Error (InvalidArgs b))
+            | _ ->
+                let res2 = eval e2 in
+                (match res2 with
+                 | Error err -> Error err
+                 | Ok v2 ->
+                     (match b, v1, v2 with
+                      | Add, VNum n1, VNum n2 -> Ok (VNum (n1 + n2))
+                      | Sub, VNum n1, VNum n2 -> Ok (VNum (n1 - n2))
+                      | Mul, VNum n1, VNum n2 -> Ok (VNum (n1 * n2))
+                      | Div, VNum n1, VNum n2 ->
+                          if n2 = 0 then Error DivByZero else Ok (VNum (n1 / n2))
+                      | Mod, VNum n1, VNum n2 ->
+                          if n2 = 0 then Error DivByZero else Ok (VNum (n1 mod n2))
+                      | Lt, VNum n1, VNum n2 -> Ok (VBool (n1 < n2))
+                      | Lte, VNum n1, VNum n2 -> Ok (VBool (n1 <= n2))
+                      | Gt, VNum n1, VNum n2 -> Ok (VBool (n1 > n2))
+                      | Gte, VNum n1, VNum n2 -> Ok (VBool (n1 >= n2))
+                      | Eq, VNum n1, VNum n2 -> Ok (VBool (n1 = n2))
+                      | Neq, VNum n1, VNum n2 -> Ok (VBool (n1 <> n2))
+                      | _, _, _ -> Error (InvalidArgs b)))))
+  | If (cond, e1, e2) ->
+      let res_cond = eval cond in
+      (match res_cond with
        | Error err -> Error err
-       | Ok v1 -> eval (subst v1 x e2))
-
-  | Fun (x,body) -> Ok (VFun (x,body))
-
-  | App (e1,e2) ->
-      (match eval e1 with
+       | Ok (VBool true) -> eval e1
+       | Ok (VBool false) -> eval e2
+       | Ok _ -> Error InvalidIfCond)
+  | Let (x, e1, e2) ->
+      let res1 = eval e1 in
+      (match res1 with
        | Error err -> Error err
-       | Ok vf ->
-         match vf with
-         | VFun (x,body) ->
-             (match eval e2 with
-              | Error err -> Error err
-              | Ok v2 -> eval (subst v2 x body))
-         | _ -> Error InvalidApp)
+       | Ok v -> eval (subst v x e2))
+  | Fun (x, e) -> Ok (VFun (x, e))
+  | App (e1, e2) ->
+      let res1 = eval e1 in
+      (match res1 with
+       | Error err -> Error err
+       | Ok (VFun (x, body)) ->
+           let res2 = eval e2 in
+           (match res2 with
+            | Error err -> Error err
+            | Ok v -> eval (subst v x body))
+       | Ok _ -> Error InvalidApp)
 
-  | Bop (op, e1, e2) ->
-      let ( let* ) r f = match r with Ok x -> f x | Error e -> Error e in
-      let* v1 = eval e1 in
-      match op with
-      | And ->
-          (match as_bool v1 with
-           | None -> Error (InvalidArgs And)
-           | Some false -> Ok (VBool false)
-           | Some true ->
-               let* v2 = eval e2 in
-               match as_bool v2 with
-               | Some b -> Ok (VBool b)
-               | None -> Error (InvalidArgs And))
-      | Or  ->
-          (match as_bool v1 with
-           | None -> Error (InvalidArgs Or)
-           | Some true -> Ok (VBool true)
-           | Some false ->
-               let* v2 = eval e2 in
-               match as_bool v2 with
-               | Some b -> Ok (VBool b)
-               | None -> Error (InvalidArgs Or))
-      | Add | Sub | Mul | Div | Mod
-      | Lt  | Lte | Gt  | Gte | Eq  | Neq ->
-          (match as_int v1 with
-           | None -> Error (InvalidArgs op)
-           | Some n1 ->
-               let* v2 = eval e2 in
-               match as_int v2 with
-               | None -> Error (InvalidArgs op)
-               | Some n2 ->
-                 match op with
-                 | Add -> Ok (VNum (n1 + n2))
-                 | Sub -> Ok (VNum (n1 - n2))
-                 | Mul -> Ok (VNum (n1 * n2))
-                 | Div -> if n2 = 0 then Error DivByZero
-                          else Ok (VNum (n1 / n2))
-                 | Mod -> if n2 = 0 then Error DivByZero
-                          else Ok (VNum (n1 mod n2))
-                 | Lt  -> Ok (VBool (n1 <  n2))
-                 | Lte -> Ok (VBool (n1 <= n2))
-                 | Gt  -> Ok (VBool (n1 >  n2))
-                 | Gte -> Ok (VBool (n1 >= n2))
-                 | Eq  -> Ok (VBool (n1 =  n2))
-                 | Neq -> Ok (VBool (n1 <> n2))
-                 | And | Or -> assert false)
-
-
-(* ---------- free-variable check for interp ---------- *)
-let rec first_free (bound : string list) (e : expr) : string option =
-  match e with
-  | Unit | True | False | Num _ -> None
-  | Var x -> if List.mem x bound then None else Some x
-  | App (e1,e2)
-  | Bop (_,e1,e2) ->
-      (match first_free bound e1 with
-       | Some x -> Some x
-       | None -> first_free bound e2)
-  | If (e1,e2,e3) ->
-      (match first_free bound e1 with
-       | Some x -> Some x
-       | None ->
-          match first_free bound e2 with
-          | Some x -> Some x
-          | None -> first_free bound e3)
-  | Let (x,e1,e2) ->
-      (match first_free bound e1 with
-       | Some v -> Some v
-       | None -> first_free (x::bound) e2)
-  | Fun (x,body) -> first_free (x::bound) body
-
-(* ---------- top-level ---------- *)
-let interp (src : string) : (value, error) result =
-  match parse src with
+let interp (input: string) : (value, error) result =
+  match parse input with
   | None -> Error ParseFail
-  | Some e ->
-      (match first_free [] e with
-       | Some x -> Error (UnknownVar x)
-       | None -> eval e)
+  | Some expr ->
+      let rec find_free_vars expr bound_vars =
+        match expr with
+        | Num _ | True | False | Unit -> None
+        | Var x -> if List.mem x bound_vars then None else Some x
+        | Bop (_, e1, e2) -> 
+            (match find_free_vars e1 bound_vars with
+             | Some x -> Some x
+             | None -> find_free_vars e2 bound_vars)
+        | If (cond, e1, e2) ->
+            (match find_free_vars cond bound_vars with
+             | Some x -> Some x
+             | None -> 
+                 match find_free_vars e1 bound_vars with
+                 | Some x -> Some x
+                 | None -> find_free_vars e2 bound_vars)
+        | Let (x, e1, e2) ->
+            (match find_free_vars e1 bound_vars with
+             | Some v -> Some v
+             | None -> find_free_vars e2 (x :: bound_vars))
+        | Fun (x, e) -> find_free_vars e (x :: bound_vars)
+        | App (e1, e2) ->
+            (match find_free_vars e1 bound_vars with
+             | Some x -> Some x
+             | None -> find_free_vars e2 bound_vars)
+      in
+      match find_free_vars expr [] with
+      | Some x -> Error (UnknownVar x)
+      | None -> eval expr
