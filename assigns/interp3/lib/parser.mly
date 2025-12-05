@@ -121,7 +121,8 @@ ty:
   | LPAREN; t=ty; RPAREN         { t }
   | t=ty; TLIST    %prec TLIST   { TList t }
   | t=ty; TOPTION  %prec TOPTION { TOption t }
-  | t1=ty; ARROW; t2=ty          { TArrow (t1, t2) }
+  | t1=ty; ARROW; t2=ty          { TFun (t1, t2) }   
+
 arg:
   | x=VAR { (x, None) }
   | LPAREN; x=VAR; ty=annot; RPAREN { (x, Some ty) }
