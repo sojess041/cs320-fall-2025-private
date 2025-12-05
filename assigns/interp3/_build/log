@@ -1,0 +1,58 @@
+# dune build
+# OCAMLPARAM: unset
+# Shared cache: enabled-except-user-rules
+# Shared cache location: /Users/jess/Desktop/.cache/dune/db
+# Workspace root:
+# /Users/jess/Desktop/Desktop/CS320/cs320-fall-2025-private/assigns/interp3
+# Auto-detected concurrency: 8
+# Dune context:
+#  { name = "default"
+#  ; kind = "default"
+#  ; profile = Dev
+#  ; merlin = true
+#  ; fdo_target_exe = None
+#  ; build_dir = In_build_dir "default"
+#  ; instrument_with = []
+#  }
+$ /Users/jess/Desktop/.opam/cs320-f25/bin/ocamlc.opt -config > /var/folders/37/gtfr90j92g1c82mvt9396my00000gn/T/dune_450598_output
+$ (cd _build/default && /Users/jess/Desktop/.opam/cs320-f25/bin/ocamlc.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -w -49 -nopervasives -nostdlib -g -bin-annot -bin-annot-occurrences -I lib/.interp3.objs/byte -no-alias-deps -opaque -o lib/.interp3.objs/byte/interp3__.cmo -c -impl lib/interp3__.ml-gen)
+$ (cd _build/.sandbox/e032532038d78f5197a6c4a1a52edd8a/default && /Users/jess/Desktop/.opam/cs320-f25/bin/menhir lib/parser.mly --base lib/parser --infer-write-query lib/parser__mock.ml.mock)
+> File "lib/parser.mly", line 38, characters 7-10:
+> Warning: the token ALT is unused.
+> File "lib/parser.mly", line 41, characters 7-11:
+> Warning: the token ELSE is unused.
+> File "lib/parser.mly", line 39, characters 7-9:
+> Warning: the token IF is unused.
+> File "lib/parser.mly", line 36, characters 7-12:
+> Warning: the token MATCH is unused.
+> File "lib/parser.mly", line 40, characters 7-11:
+> Warning: the token THEN is unused.
+> File "lib/parser.mly", line 37, characters 7-11:
+> Warning: the token WITH is unused.
+$ (cd _build/default && /Users/jess/Desktop/.opam/cs320-f25/bin/ocamldep.opt -modules -impl lib/utils.ml) > _build/default/lib/.interp3.objs/interp3__Utils.impl.d
+$ (cd _build/default && /Users/jess/Desktop/.opam/cs320-f25/bin/ocamldep.opt -modules -impl lib/interp3.ml) > _build/default/lib/.interp3.objs/interp3.impl.d
+$ (cd _build/default && /Users/jess/Desktop/.opam/cs320-f25/bin/ocamllex -q -o lib/lexer.ml lib/lexer.mll)
+$ (cd _build/default && /Users/jess/Desktop/.opam/cs320-f25/bin/ocamlc.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -bin-annot -bin-annot-occurrences -I lib/.interp3.objs/byte -no-alias-deps -opaque -open Interp3__ -o lib/.interp3.objs/byte/interp3__Utils.cmo -c -impl lib/utils.ml)
+$ (cd _build/default && /Users/jess/Desktop/.opam/cs320-f25/bin/ocamldep.opt -modules -impl lib/lexer.ml) > _build/default/lib/.interp3.objs/interp3__Lexer.impl.d
+$ (cd _build/.sandbox/e2f0f4e8d82dd131fc8626bd679a2690/default && /Users/jess/Desktop/.opam/cs320-f25/bin/ocamldep.opt -modules -impl lib/parser__mock.ml.mock) > _build/.sandbox/e2f0f4e8d82dd131fc8626bd679a2690/default/lib/.interp3.objs/parser__mock.impl.d
+$ (cd _build/.sandbox/6982ed6a242038cf4db832524c9e3472/default && /Users/jess/Desktop/.opam/cs320-f25/bin/ocamlc.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -I lib/.interp3.objs/byte -open Interp3__ -short-paths -i -impl lib/parser__mock.ml.mock) > _build/.sandbox/6982ed6a242038cf4db832524c9e3472/default/lib/parser__mock.mli.inferred
+$ (cd _build/.sandbox/6692a597e677369e2d0e8dda42297545/default && /Users/jess/Desktop/.opam/cs320-f25/bin/menhir --explain lib/parser.mly --base lib/parser --infer-read-reply lib/parser__mock.mli.inferred)
+> File "lib/parser.mly", line 125, characters 25-30:
+> Warning: this %prec declaration is never useful.
+> File "lib/parser.mly", line 126, characters 25-32:
+> Warning: this %prec declaration is never useful.
+$ (cd _build/default && /Users/jess/Desktop/.opam/cs320-f25/bin/ocamldep.opt -modules -intf lib/parser.mli) > _build/default/lib/.interp3.objs/interp3__Parser.intf.d
+$ (cd _build/default && /Users/jess/Desktop/.opam/cs320-f25/bin/ocamlc.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -bin-annot -bin-annot-occurrences -I lib/.interp3.objs/byte -no-alias-deps -opaque -open Interp3__ -o lib/.interp3.objs/byte/interp3__Parser.cmi -c -intf lib/parser.mli)
+$ (cd _build/default && /Users/jess/Desktop/.opam/cs320-f25/bin/ocamldep.opt -modules -impl lib/parser.ml) > _build/default/lib/.interp3.objs/interp3__Parser.impl.d
+$ (cd _build/default && /Users/jess/Desktop/.opam/cs320-f25/bin/ocamlc.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -bin-annot -bin-annot-occurrences -I lib/.interp3.objs/byte -no-alias-deps -opaque -open Interp3__ -o lib/.interp3.objs/byte/interp3__Lexer.cmo -c -impl lib/lexer.ml)
+$ (cd _build/default && /Users/jess/Desktop/.opam/cs320-f25/bin/ocamlc.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -bin-annot -bin-annot-occurrences -I lib/.interp3.objs/byte -no-alias-deps -opaque -open Interp3__ -o lib/.interp3.objs/byte/interp3.cmo -c -impl lib/interp3.ml)
+> File "lib/interp3.ml", line 7, characters 32-37:
+> 7 | let unify (_cs : constr list) : subst =
+>                                     ^^^^^
+> Error: Unbound type constructor subst
+[2]
+$ (cd _build/default && /Users/jess/Desktop/.opam/cs320-f25/bin/ocamlopt.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -w -49 -nopervasives -nostdlib -g -I lib/.interp3.objs/byte -I lib/.interp3.objs/native -cmi-file lib/.interp3.objs/byte/interp3__.cmi -no-alias-deps -opaque -o lib/.interp3.objs/native/interp3__.cmx -c -impl lib/interp3__.ml-gen)
+$ (cd _build/default && /Users/jess/Desktop/.opam/cs320-f25/bin/ocamlopt.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -I lib/.interp3.objs/byte -I lib/.interp3.objs/native -cmi-file lib/.interp3.objs/byte/interp3__Utils.cmi -no-alias-deps -opaque -open Interp3__ -o lib/.interp3.objs/native/interp3__Utils.cmx -c -impl lib/utils.ml)
+$ (cd _build/default && /Users/jess/Desktop/.opam/cs320-f25/bin/ocamlopt.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -I lib/.interp3.objs/byte -I lib/.interp3.objs/native -cmi-file lib/.interp3.objs/byte/interp3__Lexer.cmi -no-alias-deps -opaque -open Interp3__ -o lib/.interp3.objs/native/interp3__Lexer.cmx -c -impl lib/lexer.ml)
+$ (cd _build/default && /Users/jess/Desktop/.opam/cs320-f25/bin/ocamlc.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -bin-annot -bin-annot-occurrences -I lib/.interp3.objs/byte -cmi-file lib/.interp3.objs/byte/interp3__Parser.cmi -no-alias-deps -opaque -open Interp3__ -o lib/.interp3.objs/byte/interp3__Parser.cmo -c -impl lib/parser.ml)
+$ (cd _build/default && /Users/jess/Desktop/.opam/cs320-f25/bin/ocamlopt.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -I lib/.interp3.objs/byte -I lib/.interp3.objs/native -cmi-file lib/.interp3.objs/byte/interp3__Parser.cmi -no-alias-deps -opaque -open Interp3__ -o lib/.interp3.objs/native/interp3__Parser.cmx -c -impl lib/parser.ml)
